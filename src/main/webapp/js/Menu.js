@@ -4,105 +4,92 @@
  * Will be very grateful for merge request with fix of this numbers
  *
  */
-var Menu = function () {
-    this.visible = true;
+var Menu = function (stage) {
+    this.stage = stage;
     this.elements = [];
 };
 
 Menu.prototype.show = function () {
-    this.visible = true;
-    this.draw();
+    this.drawBackground();
+    this.drawPlayButton();
 };
 
 Menu.prototype.hide = function () {
-    this.visible = false;
-
     for (var i = 0; i < this.elements.length; i++) {
-        gGameEngine.stage.removeChild(this.elements[i]);
+        this.stage.removeChild(this.elements[i]);
     }
     this.elements = [];
 };
 
-Menu.prototype.showWithText = function (text, color) {
-    this.visible = true;
-    this.draw(text, color);
+Menu.prototype.showGameOver = function (text) {
+    this.show();
+    this.showGameOverText(text);
 };
 
-Menu.prototype.draw = function (text, color) {
-    this.drawBackground();
-    this.drawStartButton();
-    if (text !== null) {
-        this.drawText(text, color);
-    }
-};
-
-Menu.prototype.update = function () {
-    if (!this.elements) {
-        return;
-    }
-
-    for (var i = 0; i < this.elements.length; i++) {
-        gGameEngine.moveToFront(this.elements[i]);
-    }
-};
 
 Menu.prototype.drawBackground = function () {
     var canvasRect = new createjs.Graphics()
         .beginFill("rgba(0, 0, 0, 0.5)")
-        .drawRect(0, 0, gGameEngine.size.w, gGameEngine.size.h);
+        .drawRect(0, 0, gCanvas.getWidthInPixel(), gCanvas.getHeightInPixel());
 
     var background = new createjs.Shape(canvasRect);
-    gGameEngine.stage.addChild(background);
+    this.stage.addChild(background);
     this.elements.push(background);
 };
 
-Menu.prototype.drawText = function (text, color) {
-    var startButtonX = gGameEngine.size.w / 2 - 55;
-    var startButtonY = gGameEngine.size.h / 2 - 80;
-
-    var gameText = new createjs.Text(text, "20px Helvetica", color);
-    if (text === "GAME OVER :(") {
-        gameText.x = startButtonX - 40;
-    }
-    else {
-        gameText.x = startButtonX - 30;
-    }
-    gameText.y =  startButtonY.y - 90;
-    gGameEngine.stage.addChild(gameText);
-    this.elements.push(gameText);
+Menu.prototype.showGameOverText = function (text) {
+    var gameOverText = new createjs.Text(text, "40px Helvetica", "#ff4444");
+    gameOverText.x = (gCanvas.getWidthInPixel() - gameOverText.getMeasuredWidth()) / 2;
+    var shiftFromUpside = 60;
+    gameOverText.y = shiftFromUpside;
+    this.stage.addChild(gameOverText);
+    this.elements.push(gameOverText);
 };
 
-Menu.prototype.drawStartButton = function () {
-    var startButtonX = gGameEngine.size.w / 2 - 55;
-    var startButtonY = gGameEngine.size.h / 2 - 80;
-    var startButtonSize = 110;
+Menu.prototype.drawPlayButton = function () {
+    var buttonSize = 110;
+    // counting central position for this element
+    var buttonX = (gCanvas.getWidthInPixel() - buttonSize) / 2;
+    var buttonY = (gCanvas.getHeightInPixel() - buttonSize) / 2;
 
-    var singleBgGraphics = new createjs.Graphics()
+    this.drawPlayButtonBackground(buttonX, buttonY, buttonSize);
+    this.drawPlayButtonText(buttonX, buttonY, buttonSize);
+    this.drawPawnIcon(buttonX, buttonY, buttonSize);
+};
+
+Menu.prototype.drawPlayButtonBackground = function (x, y, buttonSize) {
+    var playButtonBackgroundGraphics = new createjs.Graphics()
         .beginFill("rgba(0, 0, 0, 0.5)")
-        .drawRect(startButtonX, startButtonY, startButtonSize, startButtonSize);
-    var singleBg = new createjs.Shape(singleBgGraphics);
-    gGameEngine.stage.addChild(singleBg);
-    this.elements.push(singleBg);
-    this.setHandCursor(singleBg);
+        .drawRect(x, y, buttonSize, buttonSize);
 
-    singleBg.addEventListener('click', function () {
-        gGameEngine.serverProxy.getSessionIdFromMatchMaker();
+    var background = new createjs.Shape(playButtonBackgroundGraphics);
+    this.stage.addChild(background);
+    this.elements.push(background);
+    this.setHandCursor(background);
+
+    background.addEventListener('click', function() {
+        gGameEngine.startGame()
     });
+};
 
-    var playButton = new createjs.Text("Play", "32px Helvetica", "#ff4444");
-    var singleTitleWidth = playButton.getMeasuredWidth();
-    var modeTitlesY = startButtonY + startButtonSize - playButton.getMeasuredHeight() - 20;
+Menu.prototype.drawPlayButtonText = function (x, y, buttonSize) {
+    var playText = new createjs.Text("Play", "32px Helvetica", "#ff4444");
+    // counting central position inside background
+    playText.x = x + (buttonSize - playText.getMeasuredWidth()) / 2;
+    var shiftFromDownside = 20;
+    playText.y = (y + buttonSize) - (playText.getMeasuredHeight() + shiftFromDownside);
+    this.stage.addChild(playText);
+    this.elements.push(playText);
+};
 
-    playButton.x = startButtonX + (startButtonSize - singleTitleWidth) / 2;
-    playButton.y = modeTitlesY;
-    gGameEngine.stage.addChild(playButton);
-    this.elements.push(playButton);
-
-    var iconsY = startButtonY + 13;
-    var singleIcon = new createjs.Bitmap("img/betty.png");
-    singleIcon.sourceRect = new createjs.Rectangle(0, 0, 48, 48);
-    singleIcon.x = startButtonX + (startButtonSize - 48) / 2;
-    singleIcon.y = iconsY;
+Menu.prototype.drawPawnIcon = function (x, y, buttonSize) {
+    var singleIcon = new createjs.Bitmap(gGameEngine.asset.pawn);
+    var pawnIconSize = 48;
+    singleIcon.sourceRect = new createjs.Rectangle(0, 0, pawnIconSize, pawnIconSize);
+    // counting central position inside background
+    singleIcon.x = x + (buttonSize - pawnIconSize) / 2;
+    var shiftFromUpside = 13;
+    singleIcon.y = y + shiftFromUpside;
     gGameEngine.stage.addChild(singleIcon);
     this.elements.push(singleIcon);
 };

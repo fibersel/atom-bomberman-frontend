@@ -8,7 +8,7 @@ var Bomb = function (id, position, strength) {
     };
 
     var spriteSheet = new createjs.SpriteSheet({
-        images: [gGameEngine.bombImg],
+        images: [gGameEngine.asset.bomb],
         frames: {
             width: size.w,
             height: size.h,
@@ -26,7 +26,7 @@ var Bomb = function (id, position, strength) {
 
     this.bmp.gotoAndPlay('idle');
     gGameEngine.stage.addChild(this.bmp);
-    gGameEngine.bombs.push(this);
+    gGameEngine.game.bombs.push(this);
 };
 
 Bomb.prototype.remove = function() {
