@@ -89,7 +89,7 @@ Game.prototype.gc = function (gameObjects) {
         }
     }
 
-    [this.players, this.bombs].forEach(function (it) {
+    [this.bombs].forEach(function (it) {
         var i = it.length;
         while (i--) {
             if (!survivors.has(it[i].id)) {

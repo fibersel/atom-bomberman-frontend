@@ -21,7 +21,7 @@ var Player = function (id, position) {
             left: [4, 7, 'left', 0.1],
             up: [8, 11, 'up', 0.1],
             right: [12, 15, 'right', 0.1],
-            dead: [16, 16, 'dead', 0.1]
+            dead: [16, 16, 'dead', 0.08]
         }
     });
 
@@ -45,6 +45,10 @@ Player.prototype.animate = function (animation) {
 Player.prototype.update = function () {
     if (!this.alive) {
         this.animate('dead');
+        var self = this;
+        this.bmp.addEventListener('animationend', function() {
+            self.remove();
+        });
         return;
     }
 
